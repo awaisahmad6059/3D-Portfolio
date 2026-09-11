@@ -1,0 +1,99 @@
+.cta-section {
+  width: 100%;
+  padding: 80px 20px;
+  background-color: var(--backgroundColor);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 52px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  min-width: 220px;
+}
+
+.cta-btn-hire {
+  background: var(--accentColor);
+  color: #0b080c;
+  border: 2px solid var(--accentColor);
+  box-shadow: 0 4px 24px rgba(74, 222, 128, 0.25);
+}
+
+.cta-btn-hire:hover {
+  background: #4ade80;
+  border-color: #4ade80;
+  box-shadow: 0 10px 40px rgba(74, 222, 128, 0.45);
+  transform: translateY(-3px);
+}
+
+/* Responsive */
+@media only screen and (max-width: 768px) {
+  .cta-section {
+    padding: 60px 20px;
+  }
+
+  .cta-btn {
+    width: 100%;
+    max-width: 280px;
+    padding: 14px 36px;
+    font-size: 15px;
+  }
+}
+
+.sys-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.sys-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Geist", monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--accentColor);
+  background: var(--surfaceColor);
+  border: 1px solid var(--borderColor);
+  border-radius: 6px;
+  padding: 7px 13px;
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.08);
+}
+
+.sys-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  margin-right: 7px;
+  animation: sysDotBlink 1.2s steps(1) infinite;
+}
+
+@keyframes sysDotBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}

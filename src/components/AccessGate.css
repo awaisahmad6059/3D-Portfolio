@@ -1,0 +1,123 @@
+.access-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 8, 12, 0.55);
+  backdrop-filter: blur(3px);
+  font-family: "Geist", monospace;
+  color: #4ade80;
+  animation: gateFlicker 3.5s steps(1) infinite;
+}
+.access-form {
+  width: min(440px, 86vw);
+  padding: 24px 26px;
+  background: #0b080c;
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  border-radius: 10px;
+  box-shadow: 0 0 34px rgba(74, 222, 128, 0.2);
+}
+.access-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #bbf7d0;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.access-lock {
+  color: #4ade80;
+}
+.access-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(74, 222, 128, 0.4);
+  padding-bottom: 6px;
+}
+.access-prompt {
+  color: #4ade80;
+  font-weight: 700;
+}
+.access-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #eae5ec;
+  font-family: "Geist", monospace;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.access-input::placeholder {
+  color: rgba(187, 247, 208, 0.4);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.access-caret {
+  animation: bootBlink 1s steps(1) infinite;
+}
+.access-granted-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px;
+  border: 1px solid rgba(74, 222, 128, 0.55);
+  background: rgba(11, 8, 12, 0.6);
+  border-radius: 10px;
+  box-shadow: 0 0 40px rgba(74, 222, 128, 0.35);
+  animation: grantedPop 0.5s ease-out;
+}
+.access-granted-text {
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #4ade80;
+  text-shadow: 0 0 24px rgba(74, 222, 128, 0.8);
+}
+.access-granted-sub {
+  font-size: 13px;
+  color: #bbf7d0;
+  letter-spacing: 1px;
+}
+@keyframes grantedPop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes gateFlicker {
+  0%,
+  90%,
+  94%,
+  100% {
+    opacity: 1;
+  }
+  91% {
+    opacity: 0.92;
+  }
+  93% {
+    opacity: 0.97;
+  }
+  96% {
+    opacity: 0.9;
+  }
+}
+@keyframes bootBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}

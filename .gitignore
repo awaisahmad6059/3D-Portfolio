@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Local OS/editor files
+.DS_Store
+
+# Local logs and scratch output
+build_output.txt
+build_errors.txt
+*.log
+
+# Media captures from local testing
+Screenshot_*.png
+screen-capture *.webm

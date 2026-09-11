@@ -1,0 +1,115 @@
+.myworks-page {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 60px;
+}
+
+.myworks-header {
+  text-align: center;
+  padding: 70px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-button {
+  display: inline-block;
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  padding: 10px 24px;
+  border-radius: 24px;
+  letter-spacing: 1px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: rgba(74, 222, 128, 0.1);
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.25);
+}
+
+.myworks-header h1 {
+  font-size: 76px;
+  line-height: 76px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.myworks-header h1 span {
+  color: var(--accentColor);
+}
+
+.myworks-subtitle {
+  color: var(--textColorDim);
+  font-size: 15px;
+  font-weight: 200;
+  margin: 0;
+  min-height: 22px;
+}
+
+.myworks-status {
+  color: var(--textColorDim);
+  font-size: 16px;
+  font-weight: 200;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.myworks-retry {
+  margin-left: 12px;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: #4ade80;
+  background: transparent;
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.myworks-retry:hover {
+  background: rgba(74, 222, 128, 0.12);
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.25);
+}
+
+.myworks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 26px;
+  padding: 40px 40px 60px;
+  max-width: 1500px;
+  margin: auto;
+}
+
+.myworks-card {
+  border: 1px solid var(--borderColor);
+  border-radius: 6px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.015);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.myworks-card:hover {
+  border-color: rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 26px rgba(74, 222, 128, 0.12);
+  transform: translateY(-3px);
+}
+
+@media only screen and (max-width: 768px) {
+  .myworks-header h1 {
+    font-size: 46px;
+    line-height: 46px;
+  }
+
+  .myworks-grid {
+    grid-template-columns: 1fr;
+    padding: 20px 14px 40px;
+    gap: 20px;
+  }
+
+  .myworks-card {
+    padding: 14px;
+  }
+}

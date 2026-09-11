@@ -1,0 +1,74 @@
+.cursor-main {
+  --size: 26px;
+  position: fixed;
+  top: calc(var(--size) / -2);
+  left: calc(var(--size) / -2);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 10000000000;
+  background-color: rgba(74, 222, 128, 0.15);
+  border: 2px solid #4ade80;
+  box-shadow: 0 0 18px rgb(74, 222, 128);
+  box-sizing: border-box;
+  transition: top 0.25s ease-out, left 0.25s ease-out, width 0.25s ease-out,
+    height 0.25s ease-out;
+}
+.cursor-main::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #4ade80;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px #4ade80;
+}
+.cursor-icons {
+  top: 10px;
+  left: 10px;
+  height: calc(var(--cursorH) - 20px);
+  border-radius: 8px;
+  transition: all 0.5s ease-out, height 0.5s ease-in-out;
+}
+.cursor-disable {
+  --size: 0px;
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999999999;
+}
+.cursor-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  background: #4ade80;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: cursorFade 0.5s ease-out forwards;
+  box-shadow: 0 0 6px #4ade80;
+}
+@keyframes cursorFade {
+  to {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+@media only screen and (min-width: 600px) {
+  .cursor-main {
+    --size: 26px;
+  }
+  .cursor-disable {
+    --size: 0px;
+  }
+}

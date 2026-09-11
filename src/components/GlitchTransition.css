@@ -1,0 +1,123 @@
+.glitch-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(74, 222, 128, 0.05) 0 2px,
+    transparent 2px 7px
+  );
+}
+.glitch-flash::before,
+.glitch-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.glitch-flash::before {
+  background: rgba(74, 222, 128, 0.16);
+  mix-blend-mode: screen;
+}
+.glitch-flash::after {
+  background: rgba(255, 0, 96, 0.14);
+  mix-blend-mode: screen;
+}
+.glitch-flash.active {
+  visibility: visible;
+  animation: flashGlitch 0.3s steps(4) 1;
+}
+.glitch-flash.active::before {
+  animation: flashLayer1 0.3s steps(3) 1;
+}
+.glitch-flash.active::after {
+  animation: flashLayer2 0.3s steps(3) 1;
+}
+@keyframes flashGlitch {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  8% {
+    opacity: 1;
+    transform: translateX(-9px) skewX(2deg);
+  }
+  18% {
+    transform: translateX(8px) skewX(-3deg);
+  }
+  30% {
+    transform: translateX(-6px);
+  }
+  42% {
+    transform: translateX(5px);
+  }
+  56% {
+    transform: translateX(-3px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(2px) skewX(1deg);
+  }
+  85% {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+@keyframes flashLayer1 {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  20% {
+    opacity: 0.9;
+    clip-path: inset(12% 0 52% 0);
+    transform: translateX(-14px);
+  }
+  45% {
+    opacity: 0.7;
+    clip-path: inset(44% 0 28% 0);
+    transform: translateX(10px);
+  }
+  70% {
+    opacity: 0.5;
+    clip-path: inset(72% 0 4% 0);
+    transform: translateX(-6px);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+@keyframes flashLayer2 {
+  0% {
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+  }
+  20% {
+    opacity: 0.8;
+    clip-path: inset(58% 0 18% 0);
+    transform: translateX(12px);
+  }
+  45% {
+    opacity: 0.6;
+    clip-path: inset(20% 0 60% 0);
+    transform: translateX(-10px);
+  }
+  70% {
+    opacity: 0.4;
+    clip-path: inset(8% 0 76% 0);
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+  }
+}
