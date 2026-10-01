@@ -1,1 +1,9 @@
-*.glb filter=lfs diff=lfs merge=lfs -text
+# The character models are intentionally NOT tracked with Git LFS.
+#
+# Vercel does not resolve Git LFS objects when it clones a repository for a
+# deployment. Any LFS-tracked .glb file is therefore deployed as its ~130 byte
+# pointer text instead of the real binary, the GLTF loader fails to parse it,
+# and the 3D character never renders.
+#
+# The models are well under GitHub's 100 MB per-file limit, so they are stored
+# as regular blobs.
