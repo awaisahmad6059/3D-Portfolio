@@ -98,5 +98,12 @@ export default function setSplitText() {
     );
   });
 
-  ScrollTrigger.addEventListener("refresh", () => setSplitText());
+  // Register the refresh listener exactly once. Registering it inside
+  // setSplitText made every call add another listener, so each ScrollTrigger
+  // refresh re-ran the splitter N times (N grew on every refresh/resize).
+  let refreshListenerAdded = false;
+  if (!refreshListenerAdded) {
+    refreshListenerAdded = true;
+    ScrollTrigger.addEventListener("refresh", () => setSplitText());
+  }
 }

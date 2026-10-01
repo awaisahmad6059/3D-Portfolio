@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 import Loading from "../components/Loading";
-import AccessGate from "../components/AccessGate";
 
 interface LoadingType {
   isLoading: boolean;
@@ -16,22 +15,47 @@ interface LoadingType {
 
 export const LoadingContext = createContext<LoadingType | null>(null);
 
+const VISITED_KEY = "portfolio-visited";
+
+const hasVisitedBefore = () => {
+  try {
+    return sessionStorage.getItem(VISITED_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const markVisited = () => {
+  try {
+    sessionStorage.setItem(VISITED_KEY, "1");
+  } catch {
+    /* private mode — loader simply shows again */
+  }
+};
+
 export const LoadingProvider = ({ children }: PropsWithChildren) => {
   const [isLoading, setIsLoading] = useState(() => {
-    // Skip loading on mobile
+    // Skip the loader on mobile, and on repeat visits within the same tab
+    // session so a refresh goes straight to the page.
     if (window.innerWidth <= 768) return false;
-    return true;
+    return !hasVisitedBefore();
   });
   const [loading, setLoading] = useState(0);
 
   const value = {
     isLoading,
-    setIsLoading,
+    setIsLoading: (state: boolean) => {
+      if (!state) markVisited();
+      setIsLoading(state);
+    },
     setLoading,
   };
+
   useEffect(() => {
-    // Auto-start animations on mobile since there's no 3D model
-    if (window.innerWidth <= 768) {
+    // On mobile there is no 3D model, and on a repeat visit the loader is
+    // skipped — in both cases initialFX still has to run, otherwise the page
+    // stays locked (body overflow hidden) and invisible.
+    if (window.innerWidth <= 768 || hasVisitedBefore()) {
       import("../components/utils/initialFX").then((module) => {
         if (module.initialFX) {
           setTimeout(() => {
@@ -42,12 +66,9 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
     }
   }, []);
 
-  useEffect(() => {}, [loading]);
-
   return (
     <LoadingContext.Provider value={value as LoadingType}>
       {isLoading && <Loading percent={loading} />}
-      {!isLoading && <AccessGate />}
       <main className="main-body">{children}</main>
     </LoadingContext.Provider>
   );

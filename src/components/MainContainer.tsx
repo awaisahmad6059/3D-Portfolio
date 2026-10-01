@@ -24,13 +24,21 @@ const MainContainer = ({ children }: PropsWithChildren) => {
   const [isMobile] = useState<boolean>(window.innerWidth <= 768);
 
   useEffect(() => {
+    // Debounced: re-splitting every paragraph on each resize event was a
+    // major source of scroll/resize stutter.
+    let timer: ReturnType<typeof setTimeout>;
+    const runSplit = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setSplitText(), 200);
+    };
     const resizeHandler = () => {
-      setSplitText();
+      runSplit();
       setIsDesktopView(window.innerWidth > 1024);
     };
-    resizeHandler();
+    runSplit();
     window.addEventListener("resize", resizeHandler);
     return () => {
+      clearTimeout(timer);
       window.removeEventListener("resize", resizeHandler);
     };
   }, [isDesktopView]);

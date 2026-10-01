@@ -1,12 +1,44 @@
 import * as THREE from "three";
 import gsap from "gsap";
 
+// Every scroll timeline this module creates is tracked so it can be torn down
+// before being rebuilt. Without this, each rebuild added another full set of
+// timelines driving the same character/camera, which double-applied the
+// animation (broken shape + stutter) and multiplied scroll work.
+// Each builder owns its timelines so rebuilding one does not tear down the
+// other. setCharTimeline and setAllTimeline are always called as a pair, and
+// previously every call added another full set driving the same
+// character/camera, which double-applied the animation (broken shape +
+// stutter) and multiplied scroll work.
+let charTimelines: gsap.core.Timeline[] = [];
+let charClears: Array<() => void> = [];
+let pageTimelines: gsap.core.Timeline[] = [];
+
+function killCharTimelines() {
+  charClears.forEach((clear) => clear());
+  charClears = [];
+  charTimelines.forEach((tl) => {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+  });
+  charTimelines = [];
+}
+
+function killPageTimelines() {
+  pageTimelines.forEach((tl) => {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+  });
+  pageTimelines = [];
+}
+
 export function setCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
   camera: THREE.PerspectiveCamera
 ) {
+  killCharTimelines();
   let intensity: number = 0;
-  setInterval(() => {
+  const intensityTimer = setInterval(() => {
     intensity = Math.random();
   }, 200);
   const tl1 = gsap.timeline({
@@ -36,6 +68,8 @@ export function setCharTimeline(
       invalidateOnRefresh: true,
     },
   });
+  charTimelines.push(tl1, tl2, tl3);
+  charClears.push(() => clearInterval(intensityTimer));
   let screenLight: any, monitor: any;
   character?.children.forEach((object: any) => {
     if (object.name === "Plane004") {
@@ -52,11 +86,15 @@ export function setCharTimeline(
       object.material.transparent = true;
       object.material.opacity = 0;
       object.material.emissive.set("#4ade80");
-      gsap.timeline({ repeat: -1, repeatRefresh: true }).to(object.material, {
-        emissiveIntensity: () => intensity * 8,
-        duration: () => Math.random() * 0.6,
-        delay: () => Math.random() * 0.1,
-      });
+      const flicker = gsap.timeline({ repeat: -1, repeatRefresh: true }).to(
+        object.material,
+        {
+          emissiveIntensity: () => intensity * 8,
+          duration: () => Math.random() * 0.6,
+          delay: () => Math.random() * 0.1,
+        }
+      );
+      charTimelines.push(flicker);
       screenLight = object;
     }
   });
@@ -128,11 +166,13 @@ export function setCharTimeline(
         },
       });
       tM2.to(".what-box-in", { display: "flex", duration: 0.1, delay: 0 }, 0);
+      charTimelines.push(tM2);
     }
   }
 }
 
 export function setAllTimeline() {
+  killPageTimelines();
   const careerTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".career-section",
@@ -142,6 +182,7 @@ export function setAllTimeline() {
       invalidateOnRefresh: true,
     },
   });
+  pageTimelines.push(careerTimeline);
   careerTimeline
     .fromTo(
       ".career-timeline",

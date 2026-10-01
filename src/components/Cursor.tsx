@@ -6,18 +6,38 @@ const Cursor = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const trailRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    let hover = false;
     const cursor = cursorRef.current!;
     const trail = trailRef.current!;
-    const mousePos = { x: 0, y: 0 };
-    const cursorPos = { x: 0, y: 0 };
     let lastSpawn = 0;
+    let rafId = 0;
+    let pending = false;
+    let lastX = 0;
+    let lastY = 0;
 
-    document.addEventListener("mousemove", (e) => {
-      mousePos.x = e.clientX;
-      mousePos.y = e.clientY;
-      const now = Date.now();
-      if (now - lastSpawn > 18 && window.innerWidth > 768) {
+    // quickSetter writes the transform directly, so there is no tween
+    // allocation on every frame (that was what made the cursor feel slow).
+    const setX = gsap.quickSetter(cursor, "x", "px");
+    const setY = gsap.quickSetter(cursor, "y", "px");
+
+    const paint = () => {
+      pending = false;
+      setX(lastX);
+      setY(lastY);
+    };
+
+    // One listener drives both the 1:1 cursor position and the trail. There
+    // used to be two mousemove listeners here plus a requestAnimationFrame
+    // loop that ran forever updating a value nothing read, which burned CPU
+    // the whole time the page was open.
+    const onMouseMove = (e: MouseEvent) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (!pending) {
+        pending = true;
+        rafId = requestAnimationFrame(paint);
+      }
+      const now = performance.now();
+      if (now - lastSpawn > 34 && window.innerWidth > 768) {
         lastSpawn = now;
         const dot = document.createElement("span");
         dot.className = "cursor-dot";
@@ -26,16 +46,9 @@ const Cursor = () => {
         trail.appendChild(dot);
         setTimeout(() => dot.remove(), 500);
       }
-    });
-    requestAnimationFrame(function loop() {
-      if (!hover) {
-        const delay = 6;
-        cursorPos.x += (mousePos.x - cursorPos.x) / delay;
-        cursorPos.y += (mousePos.y - cursorPos.y) / delay;
-        gsap.to(cursor, { x: cursorPos.x, y: cursorPos.y, duration: 0.1 });
-      }
-      requestAnimationFrame(loop);
-    });
+    };
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
+
     document.querySelectorAll("[data-cursor]").forEach((item) => {
       const element = item as HTMLElement;
       element.addEventListener("mouseover", (e: MouseEvent) => {
@@ -47,7 +60,6 @@ const Cursor = () => {
 
           gsap.to(cursor, { x: rect.left, y: rect.top, duration: 0.1 });
           cursor.style.setProperty("--cursorH", `${rect.height}px`);
-          hover = true;
         }
         if (element.dataset.cursor === "disable") {
           cursor.classList.add("cursor-disable");
@@ -55,9 +67,13 @@ const Cursor = () => {
       });
       element.addEventListener("mouseout", () => {
         cursor.classList.remove("cursor-disable", "cursor-icons");
-        hover = false;
       });
     });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      document.removeEventListener("mousemove", onMouseMove);
+    };
   }, []);
 
   return (

@@ -23,6 +23,12 @@ const Scene = () => {
   const [, setChar] = useState<THREE.Object3D | null>(null);
   useEffect(() => {
     if (canvasDiv.current) {
+      // Two Scene effects can overlap briefly (React StrictMode double-invoke
+      // in dev, fast refresh during development). Disposing the previous
+      // renderer synchronously avoids two canvases/timelines driving the same
+      // character at once, which showed up as a doubled, distorted model.
+      const prev = canvasDiv.current.querySelector("canvas");
+      prev?.remove();
       let rect = canvasDiv.current.getBoundingClientRect();
       let container = { width: rect.width, height: rect.height };
       const aspect = container.width / container.height;
@@ -34,7 +40,7 @@ const Scene = () => {
         powerPreference: "high-performance",
       });
       renderer.setSize(container.width, container.height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
       renderer.shadowMap.enabled = false;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1;
@@ -88,7 +94,7 @@ const Scene = () => {
             setTimeout(() => {
               light.turnOnLights();
               animations.startIntro();
-            }, 2500);
+            }, 300);
           });
           window.addEventListener("resize", onResize);
         }
@@ -119,9 +125,7 @@ const Scene = () => {
         });
       };
 
-      document.addEventListener("mousemove", (event) => {
-        onMouseMove(event);
-      });
+      document.addEventListener("mousemove", onMouseMove, { passive: true });
       const landingDiv = document.getElementById("landingDiv");
       if (landingDiv) {
         landingDiv.addEventListener("touchstart", onTouchStart);
@@ -263,8 +267,9 @@ const Scene = () => {
           return items;
         },
       };
+      let io: IntersectionObserver | undefined;
       if (typeof IntersectionObserver !== "undefined") {
-        const io = new IntersectionObserver(
+        io = new IntersectionObserver(
           (entries) => {
             canvasVisible =
               entries.some((e) => e.isIntersecting) && !document.hidden;
@@ -274,8 +279,9 @@ const Scene = () => {
         io.observe(renderer.domElement);
       }
 
+      let rafId = 0;
       const render = () => {
-        requestAnimationFrame(render);
+        rafId = requestAnimationFrame(render);
         const delta = clock.getDelta();
         if (mixer) {
           mixer.update(delta);
@@ -298,7 +304,10 @@ const Scene = () => {
           return;
         }
         const now = performance.now();
-        if (now - lastRenderAt < 11) return;
+        // 33ms floor caps rendering at ~30fps. The scene is a background
+        // element, so 30fps looks identical here but frees a lot of GPU on
+        // laptops that were rendering it at 90fps.
+        if (now - lastRenderAt < 33) return;
         lastRenderAt = now;
         if (headBone) {
           light.setPointLight(screenLight);
@@ -325,16 +334,20 @@ const Scene = () => {
       };
       render();
       return () => {
+        cancelAnimationFrame(rafId);
         clearTimeout(debounce);
+        progress.clear();
+        io?.disconnect();
         scene.clear();
         renderer.dispose();
+        renderer.forceContextLoss();
         window.removeEventListener("resize", onResize);
-        if (canvasDiv.current) {
+        if (canvasDiv.current?.contains(renderer.domElement)) {
           canvasDiv.current.removeChild(renderer.domElement);
         }
         document.removeEventListener("click", onCanvasClick, true);
+        document.removeEventListener("mousemove", onMouseMove);
         if (landingDiv) {
-          document.removeEventListener("mousemove", onMouseMove);
           landingDiv.removeEventListener("touchstart", onTouchStart);
           landingDiv.removeEventListener("touchend", onTouchEnd);
         }

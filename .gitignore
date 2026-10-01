@@ -14,6 +14,7 @@ coverage/
 # Local logs and scratch output
 build_output.txt
 build_errors.txt
+build-*.txt
 *.log
 
 # Media captures from local testing

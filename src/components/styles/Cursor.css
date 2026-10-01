@@ -12,8 +12,10 @@
   border: 2px solid #4ade80;
   box-shadow: 0 0 18px rgb(74, 222, 128);
   box-sizing: border-box;
-  transition: top 0.25s ease-out, left 0.25s ease-out, width 0.25s ease-out,
-    height 0.25s ease-out;
+  /* No width/height transition here: the position is driven by the
+     transform in JS, and a CSS transition on top/left added lag to every
+     mouse move. */
+  will-change: transform;
 }
 .cursor-main::after {
   content: "";
@@ -32,7 +34,8 @@
   left: 10px;
   height: calc(var(--cursorH) - 20px);
   border-radius: 8px;
-  transition: all 0.5s ease-out, height 0.5s ease-in-out;
+  transition: height 0.5s ease-in-out, background-color 0.2s ease-out,
+    border-color 0.2s ease-out;
 }
 .cursor-disable {
   --size: 0px;

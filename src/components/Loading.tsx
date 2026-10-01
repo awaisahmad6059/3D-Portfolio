@@ -24,10 +24,11 @@ const Loading = ({ percent }: { percent: number }) => {
   });
 
   useEffect(() => {
-    // Safety net: never let the loader get stuck — force complete after 12s
+    // Safety net: never let the loader get stuck. Kept short so a slow
+    // network or a slow model decode cannot hold the page hostage.
     const t = setTimeout(() => {
       if (percentRef.current < 100) setLoading(100);
-    }, 12000);
+    }, 1500);
     return () => clearTimeout(t);
   }, [setLoading]);
 
@@ -38,27 +39,30 @@ const Loading = ({ percent }: { percent: number }) => {
     if (percent > 85) setBootCount((c) => Math.max(c, 4));
   }, [percent]);
 
-  if (percent >= 100) {
-    setTimeout(() => {
-      setLoaded(true);
-      setTimeout(() => {
-        setIsLoaded(true);
-      }, 1000);
-    }, 600);
-  }
+  useEffect(() => {
+    if (percent < 100) return;
+    // Once the bar is full there is nothing left to wait for. These two
+    // nested delays used to hold the welcome screen for a further ~1s after
+    // the assets were ready, which is what made the home screen feel like it
+    // was loading slowly.
+    setLoaded(true);
+    setIsLoaded(true);
+  }, [percent]);
 
   useEffect(() => {
+    if (!isLoaded) return;
+    let cancelled = false;
+    setClicked(true);
     import("./utils/initialFX").then((module) => {
-      if (isLoaded) {
-        setClicked(true);
-        setTimeout(() => {
-          if (module.initialFX) {
-            module.initialFX();
-          }
-          setIsLoading(false);
-        }, 900);
+      if (cancelled) return;
+      if (module.initialFX) {
+        module.initialFX();
       }
+      setIsLoading(false);
     });
+    return () => {
+      cancelled = true;
+    };
   }, [isLoaded]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
@@ -134,8 +138,11 @@ const Loading = ({ percent }: { percent: number }) => {
 export default Loading;
 
 export const setProgress = (setLoading: (value: number) => void) => {
-  const steps = [10, 15, 30, 45, 60, 75, 90, 99];
-  const delays = [600, 900, 1200, 1400, 1400, 1400, 1400, 1400];
+  // A short cosmetic ramp only. The bar parks at 99 and waits for the real
+  // model load (loaded()), so these delays just need to look smooth, not
+  // simulate work.
+  const steps = [40, 68, 84, 93, 97, 99];
+  const delays = [50, 60, 70, 70, 70, 70];
   const timers: ReturnType<typeof setTimeout>[] = [];
   let acc = 0;
   steps.forEach((val, i) => {
@@ -148,17 +155,10 @@ export const setProgress = (setLoading: (value: number) => void) => {
   }
 
   function loaded(): Promise<number> {
-    return new Promise<number>((resolve) => {
-      let p = 99;
-      const iv = setInterval(() => {
-        p = Math.min(100, p + 1);
-        setLoading(p);
-        if (p >= 100) {
-          clearInterval(iv);
-          resolve(p);
-        }
-      }, 40);
-    });
+    // Resolves immediately: the real work is already done by the time this is
+    // called, so animating 99 -> 100 one step per 40ms only added dead time.
+    setLoading(100);
+    return Promise.resolve(100);
   }
 
   return { loaded, percent: 99, clear };

@@ -14,8 +14,26 @@ const MatrixRain = () => {
     let columns = 0;
     let drops: number[] = [];
 
+    // Precompute the trail colours once instead of building a fresh
+    // `rgba(...)` string for every one of the ~900 glyphs drawn per frame.
+    const trailStyles = Array.from({ length: 7 }, (_, k) =>
+      `rgba(74, 222, 128, ${k === 0 ? 1 : Math.max(0, 0.9 - k * 0.15)})`
+    );
+    const headStyle = "rgba(220, 252, 231, 0.95)";
+
     const chars =
       "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01$#@%&*";
+
+    // Stop drawing entirely while the canvas is scrolled out of view. It used
+    // to keep its full-screen animation running for the whole session.
+    let visible = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
     const resize = () => {
       canvas.width = canvas.clientWidth;
@@ -30,19 +48,14 @@ const MatrixRain = () => {
     window.addEventListener("resize", resize);
 
     const draw = () => {
-      if (document.hidden) {
-        animationFrame = requestAnimationFrame(draw);
-        return;
-      }
+      animationFrame = requestAnimationFrame(draw);
+      if (document.hidden || !visible) return;
       for (let i = 0; i < drops.length; i++) {
         for (let k = 0; k < 7; k++) {
           const y = (drops[i] - k) * fontSize;
           if (y < 0 || y > canvas.height) continue;
-          const alpha = k === 0 ? 1 : Math.max(0, 0.9 - k * 0.15);
-          ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
-          if (k === 0 && Math.random() > 0.985) {
-            ctx.fillStyle = "rgba(220, 252, 231, 0.95)";
-          }
+          ctx.fillStyle =
+            k === 0 && Math.random() > 0.985 ? headStyle : trailStyles[k];
           const char = chars[Math.floor(Math.random() * chars.length)];
           ctx.fillText(char, i * fontSize, y);
         }
@@ -51,12 +64,12 @@ const MatrixRain = () => {
         }
         drops[i]++;
       }
-      animationFrame = requestAnimationFrame(draw);
     };
     animationFrame = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animationFrame);
+      observer.disconnect();
       window.removeEventListener("resize", resize);
     };
   }, []);

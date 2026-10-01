@@ -11,17 +11,27 @@ import { config } from "../config";
 const SocialIcons = () => {
   useEffect(() => {
     const social = document.getElementById("social") as HTMLElement;
+    if (!social) return;
+
+    const cleanups: Array<() => void> = [];
 
     social.querySelectorAll("span").forEach((item) => {
       const elem = item as HTMLElement;
       const link = elem.querySelector("a") as HTMLElement;
+      if (!link) return;
 
       const rect = elem.getBoundingClientRect();
       let mouseX = rect.width / 2;
       let mouseY = rect.height / 2;
       let currentX = 0;
       let currentY = 0;
+      let raf = 0;
+      let running = false;
 
+      // Only animate while the value is still settling. The old code kept
+      // four requestAnimationFrame loops alive for the whole session, writing
+      // two CSS variables per icon on every frame even when the pointer was
+      // nowhere near them.
       const updatePosition = () => {
         currentX += (mouseX - currentX) * 0.1;
         currentY += (mouseY - currentY) * 0.1;
@@ -29,7 +39,22 @@ const SocialIcons = () => {
         link.style.setProperty("--siLeft", `${currentX}px`);
         link.style.setProperty("--siTop", `${currentY}px`);
 
-        requestAnimationFrame(updatePosition);
+        if (
+          Math.abs(mouseX - currentX) < 0.1 &&
+          Math.abs(mouseY - currentY) < 0.1
+        ) {
+          currentX = mouseX;
+          currentY = mouseY;
+          running = false;
+          return;
+        }
+        raf = requestAnimationFrame(updatePosition);
+      };
+
+      const start = () => {
+        if (running) return;
+        running = true;
+        raf = requestAnimationFrame(updatePosition);
       };
 
       const onMouseMove = (e: MouseEvent) => {
@@ -43,16 +68,19 @@ const SocialIcons = () => {
           mouseX = rect.width / 2;
           mouseY = rect.height / 2;
         }
+        start();
       };
 
       document.addEventListener("mousemove", onMouseMove);
+      start();
 
-      updatePosition();
-
-      return () => {
-        elem.removeEventListener("mousemove", onMouseMove);
-      };
+      cleanups.push(() => {
+        cancelAnimationFrame(raf);
+        document.removeEventListener("mousemove", onMouseMove);
+      });
     });
+
+    return () => cleanups.forEach((fn) => fn());
   }, []);
 
   return (
